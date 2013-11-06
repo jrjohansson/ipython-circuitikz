@@ -6,15 +6,13 @@ import os
 from IPython.core.magic import magics_class, cell_magic, Magics
 from IPython.display import Image, SVG
 
+#%\usepackage[paperwidth=%s,paperheight=%s,margin=0in]{geometry}
 latex_template = r"""
-\documentclass{minimal}
-\usepackage[paperwidth=%s,paperheight=%s,margin=0in]{geometry}
+\documentclass{standalone}
 \usepackage{tikz}
 \usepackage[%s]{circuitikz}
 \begin{document}
-\begin{center}
 %s
-\end{center}
 \end{document}
 """
 
@@ -32,27 +30,26 @@ class Circuitikz(Magics):
             Possible keys and default values are
 
                 filename = ipynb-circuitikz-output
-                paperwidth = 8in
-                paperheight = 6in
                 dpi = 100 (for use with format = png)
                 options = europeanresistors,americaninductors
                 format = svg (svg or png)
 
         """
         options = {'filename': 'ipynb-circuitikz-output',
-                   'paperwidth': '8in',
-                   'paperheight': '6in',
                    'dpi': '100',
                    'format': 'png',
                    'options': 'europeanresistors,americaninductors'}
 
 
         for option in line.split(" "):
-            key, value = option.split("=")
-            if key in options:
-                options[key] = value
-            else:
-                print("Unrecongized option %s" % key)
+            try:
+                key, value = option.split("=")
+                if key in options:
+                    options[key] = value
+                else:
+                    print("Unrecongized option %s" % key)
+            except:
+                pass
 
         filename = options['filename']
         code = cell
@@ -60,13 +57,12 @@ class Circuitikz(Magics):
         os.system("rm -f %s.tex %s.pdf %s.png" % (filename, filename, filename))        
 
         with open(filename + ".tex", "w") as file:
-            file.write(latex_template % (options['paperwidth'],
-                                         options['paperheight'], 
-                                         options['options'], 
-                                         cell))
+            file.write(latex_template % (options['options'], cell))
     
         os.system("pdflatex %s.tex" % filename)
         os.system("rm -f %s.aux %s.log" % (filename, filename))        
+        os.system("pdfcrop %s.pdf %s-tmp.pdf" % (filename, filename))
+        os.system("mv %s-tmp.pdf %s.pdf" % (filename, filename))        
 
         if options['format'] == 'png':
             os.system("convert -density %s %s.pdf %s.png" % (options['dpi'], filename, filename))
