@@ -34,14 +34,16 @@ class Circuitikz(Magics):
                 filename = ipynb-circuitikz-output
                 paperwidth = 8in
                 paperheight = 6in
-                dpi = 100
+                dpi = 100 (for use with format = png)
                 options = europeanresistors,americaninductors
+                format = svg (svg or png)
 
         """
         options = {'filename': 'ipynb-circuitikz-output',
                    'paperwidth': '8in',
                    'paperheight': '6in',
                    'dpi': '100',
+                   'format': 'png',
                    'options': 'europeanresistors,americaninductors'}
 
 
@@ -65,9 +67,17 @@ class Circuitikz(Magics):
     
         os.system("pdflatex %s.tex" % filename)
         os.system("rm -f %s.aux %s.log" % (filename, filename))        
-        os.system("convert -density %s %s.pdf %s.png" % (options['dpi'], filename, filename))
-        img = Image(filename + ".png")
-        return img
+
+        if options['format'] == 'png':
+            os.system("convert -density %s %s.pdf %s.png" % (options['dpi'], filename, filename))
+            result = Image(filename + ".png")
+            print("Created %s.png" % filename)
+        else:
+            os.system("pdf2svg %s.pdf %s.svg" % (filename, filename))
+            result = SVG(filename + ".svg")
+            print("Created %s.svg" % filename)
+
+        return result
 
 
 def load_ipython_extension(ipython):
