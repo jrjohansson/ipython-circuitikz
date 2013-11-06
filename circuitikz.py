@@ -71,11 +71,9 @@ class Circuitikz(Magics):
         if options['format'] == 'png':
             os.system("convert -density %s %s.pdf %s.png" % (options['dpi'], filename, filename))
             result = Image(filename + ".png")
-            print("Created %s.png" % filename)
         else:
             os.system("pdf2svg %s.pdf %s.svg" % (filename, filename))
             result = SVG(filename + ".svg")
-            print("Created %s.svg" % filename)
 
         return result
 
