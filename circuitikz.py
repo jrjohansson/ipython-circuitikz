@@ -7,8 +7,7 @@ from IPython.core.magic import magics_class, cell_magic, Magics
 from IPython.display import Image, SVG
 
 #%\usepackage[paperwidth=%s,paperheight=%s,margin=0in]{geometry}
-latex_template = r"""
-\documentclass{standalone}
+latex_template = r"""\documentclass{standalone}
 \usepackage{tikz}
 \usepackage[%s]{circuitikz}
 \begin{document}
@@ -59,7 +58,7 @@ class Circuitikz(Magics):
         with open(filename + ".tex", "w") as file:
             file.write(latex_template % (options['options'], cell))
     
-        os.system("pdflatex %s.tex" % filename)
+        os.system("pdflatex -interaction batchmode %s.tex" % filename)
         os.system("rm -f %s.aux %s.log" % (filename, filename))        
         os.system("pdfcrop %s.pdf %s-tmp.pdf" % (filename, filename))
         os.system("mv %s-tmp.pdf %s.pdf" % (filename, filename))        
