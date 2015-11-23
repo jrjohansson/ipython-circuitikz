@@ -6,7 +6,6 @@ import os
 from IPython.core.magic import magics_class, cell_magic, Magics
 from IPython.display import Image, SVG
 
-#%\usepackage[paperwidth=%s,paperheight=%s,margin=0in]{geometry}
 latex_template = r"""\documentclass{standalone}
 \usepackage{tikz}
 \usepackage[%s]{circuitikz}
@@ -53,15 +52,24 @@ class Circuitikz(Magics):
         filename = options['filename']
         code = cell
 
-        os.system("rm -f %s.tex %s.pdf %s.png" % (filename, filename, filename))        
+        for ext in ["tex", "pdf", "png"]:
+            try:
+                os.remove("%s.%s" % (filename, ext))
+            except:
+                pass
 
         with open(filename + ".tex", "w") as file:
             file.write(latex_template % (options['options'], cell))
     
         os.system("pdflatex -interaction batchmode %s.tex" % filename)
-        os.system("rm -f %s.aux %s.log" % (filename, filename))        
+        for ext in ["aux", "log"]:
+            try:
+                os.remove("%s.%s" % (filename, ext))
+            except:
+                pass
+
         os.system("pdfcrop %s.pdf %s-tmp.pdf" % (filename, filename))
-        os.system("mv %s-tmp.pdf %s.pdf" % (filename, filename))        
+        os.rename("%s-tmp.pdf" % filename, "%s.pdf" % filename)
 
         if options['format'] == 'png':
             os.system("convert -density %s %s.pdf %s.png" % (options['dpi'], filename, filename))
